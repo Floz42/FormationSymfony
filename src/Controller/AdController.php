@@ -5,11 +5,9 @@ namespace App\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Entity\Ad;
+use App\Entity\Image;
 use App\Form\AdType;
 use App\Repository\AdRepository;
-use Doctrine\ORM\EntityManagerInterface as ORMEntityManagerInterface;
-use Symfony\Component\Form\Extension\Core\Type\SubmitType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\HttpFoundation\Request;
 use Doctrine\ORM\EntityManagerInterface as ObjectManager;
 
@@ -32,10 +30,15 @@ class AdController extends AbstractController
     public function create(Request $request, ObjectManager $manager)
     {
         $ad = new Ad();
+ 
         $form = $this->createForm(AdType::class, $ad);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            foreach($ad->getImages() as $image) {
+                $image->setAd($ad);
+                $manager->persist($image);
+            }
             $manager->persist($ad);
             $manager->flush();
             $this->addFlash('success', 'Félicitations ! Votre annonce a bien été postée');
@@ -60,6 +63,35 @@ class AdController extends AbstractController
                      ->getForm(); */
         return $this->render("ad/new.html.twig", [
             'form' => $form->createView()
+        ]);
+    }
+    /**
+     * Permet d'afficher le formulaire d'édition
+     * 
+     * @Route("/ads/{slug}/edit", name="ads_edit")
+     * 
+     * @return Response
+     */
+    public function edit(Request $request, Ad $ad, ObjectManager $manager) 
+    {
+        $form = $this->createForm(AdType::class, $ad);
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            foreach($ad->getImages() as $image) {
+                $image->setAd($ad);
+                $manager->persist($image);
+            }
+            $manager->persist($ad);
+            $manager->flush();
+            $this->addFlash('success', 'Félicitations ! Votre annonce a bien été modifiée');
+            return $this->redirectToRoute('ads_show', [
+                'slug' => $ad->getSlug()
+            ]);
+        }
+
+        return $this->render('ad/edit.html.twig', [
+            'form' => $form->createView(),
+            'ad' => $ad
         ]);
     }
 

@@ -20,7 +20,7 @@
             </ul>
         </div>
     </nav>
-    {% for message in app.flashes('success') %}
-        <div class="alert alert-sucess text-center col-6 mx-auto">{{ message }}</div>
-    {% endfor %}
 </header>
+{% for message in app.flashes('success') %}
+    <div class="alert alert-success text-center col-6 mx-auto">{{ message }}</div>
+{% endfor %}
