@@ -10,6 +10,8 @@ use App\Form\AdType;
 use App\Repository\AdRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Doctrine\ORM\EntityManagerInterface as ObjectManager;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 
 class AdController extends AbstractController
 {
@@ -26,6 +28,7 @@ class AdController extends AbstractController
 
     /**
      * @Route("/ads/new", name="ads_create")
+     * @IsGranted("ROLE_USER")
      */
     public function create(Request $request, ObjectManager $manager)
     {
@@ -72,6 +75,7 @@ class AdController extends AbstractController
      * Permet d'afficher le formulaire d'édition
      * 
      * @Route("/ads/{slug}/edit", name="ads_edit")
+     * @Security("is_granted('ROLE_USER') and user === ad.getAuthor()", message="Cette annonce ne vous appartient pas, vous ne pouvez pas la modifier")
      * 
      * @return Response
      */
@@ -108,5 +112,17 @@ class AdController extends AbstractController
         return $this->render('ad/show.html.twig', [
             'ad' => $ad
         ]);
+    }
+
+    /**
+     * @Route("/ads/{slug}/delete", name="ads_delete")
+     * @Security("is_granted('ROLE_USER') and user == ad.getAuthor()", message="Vous n'avez pas accès à cette ressource.")
+     */
+    public function delete(Ad $ad, ObjectManager $manager)
+    {
+        $manager->remove($ad);
+        $manager->flush();
+        $this->addFlash('success', 'Votre annonce a bien été supprimée.');
+        return $this->redirectToroute("ads_index");
     }
 }
