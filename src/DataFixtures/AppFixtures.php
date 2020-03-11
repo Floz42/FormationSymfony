@@ -3,6 +3,7 @@
 namespace App\DataFixtures;
 
 use App\Entity\Ad;
+use App\Entity\Booking;
 use App\Entity\Image;
 use App\Entity\Role;
 use App\Entity\User;
@@ -49,9 +50,7 @@ class AppFixtures extends Fixture
 
             $picture = 'https://randomuser.me/api/portraits/';
             $pictureId = $faker->numberBetween(1, 99) . '.jpg';
-
             $hash = $this->encoder->encodePassword($user, 'password');
-    
             $picture .= ($genre === 'male' ? 'men/' : 'women/') . $pictureId;
     
             $user->setFirstname($faker->firstName($genre))
@@ -84,6 +83,25 @@ class AppFixtures extends Fixture
                           ->setAd($ad);
                     $manager->persist($image);
                 }
+
+        for ($j=1; $j <= mt_rand(0,10); $j++) {
+            $booking = new Booking();
+            $createdAt = $faker->dateTimeBetween('-6 months');
+            $startDate = $faker->dateTimeBetween('-3 months');
+            $duration = mt_rand(3, 10);
+            $endDate = (clone $startDate)->modify("+$duration days");
+            $amount = $ad->getPrice() * $duration;
+            $booker = $users[mt_rand(0, count($users) -1)];
+            $comment = $faker->paragraph();
+            $booking->setCreatedAt($createdAt)
+                    ->setStartDate($startDate)
+                    ->setEndDate($endDate)
+                    ->setAmount($amount)
+                    ->setBooker($booker)
+                    ->setAd($ad)
+                    ->setComment($comment);
+            $manager->persist($booking);
+        }
             $manager->persist($ad);
         }
 /*         $ad = new Ad();
