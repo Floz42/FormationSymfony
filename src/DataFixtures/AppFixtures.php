@@ -4,6 +4,7 @@ namespace App\DataFixtures;
 
 use App\Entity\Ad;
 use App\Entity\Booking;
+use App\Entity\Comment;
 use App\Entity\Image;
 use App\Entity\Role;
 use App\Entity\User;
@@ -101,18 +102,19 @@ class AppFixtures extends Fixture
                     ->setAd($ad)
                     ->setComment($comment);
             $manager->persist($booking);
+
+            if(mt_rand(0,1)) {
+                $comment = new Comment();
+                $comment->setContent($faker->paragraph())
+                        ->setRating(mt_rand(1,5))
+                        ->setAuthor($booker)
+                        ->setAd($ad);
+                $manager->persist($comment);                        
+            }
         }
             $manager->persist($ad);
         }
-/*         $ad = new Ad();
-        $ad->setTitle('Titre de l\'annonce')
-            ->setSlug('titre-de-l-annonce')
-            ->setCoverImage('htt://placehold.it/1000x300')
-            ->setIntroduction('Bonjour à tous c\'est une introduction.')
-            ->setContent('<p> Je suis un contenu riche </p>')
-            ->setPrice(80)
-            ->setRooms(3);
-        $manager->persist($ad); */
+
         $manager->flush();
     }
 }
