@@ -34,7 +34,7 @@ class Booking
     /**
      * @ORM\Column(type="datetime")
      * @Assert\Date(message="Attention, la date d'arrivée doit être au bon format")
-     * @Assert\GreaterThan("today", message="La date d'arrivée doit être ultérieure à la date d'aujourd'hui.")
+     * @Assert\GreaterThan("today", message="La date d'arrivée doit être ultérieure à la date d'aujourd'hui.", groups={"front"})
      */
     private $startDate;
 
@@ -157,6 +157,7 @@ class Booking
 
     /**
      * @ORM\PrePersist
+     * @ORM\PreUpdate
      */
     public function prePersist()
     {
@@ -199,6 +200,13 @@ class Booking
             return new \DateTime(date('Y-m-d', $dayTimestamp));
         }, $resultat);
         return $days;
+    }
+
+    public function renderDays() {
+        $startDate = $this->startDate;
+        $endDate = $this->endDate;
+        $days = date_diff($endDate, $startDate);
+        return $days->format('%a jours');
     }
 
 
